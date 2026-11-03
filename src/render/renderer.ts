@@ -97,6 +97,14 @@ export class OfficeRenderer {
   private traffic = new Traffic();
   private lastSec = -1;
 
+  constructor() {
+    if (typeof document !== 'undefined' && document.fonts?.status !== 'loaded') {
+      document.fonts.ready.then(() => {
+        this.staticCanvas = null;
+      });
+    }
+  }
+
   // ===========================================================================
   // Static layer (floors, walls, furniture)
 

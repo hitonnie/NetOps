@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { XpBar } from '@/components/ui/8bit-xp-bar';
 import { fmtClock } from '../core/time';
 import { isUnsaved, renderRunningConfig } from '../net/config';
 import { maskToPrefix } from '../net/ip';
@@ -568,9 +569,7 @@ function ServicesTab({ d }: { d: Device }) {
         <dt>Disk /</dt>
         <dd>
           <div className="row">
-            <div className="prod-bar" style={{ width: 160 }} role="meter" aria-valuenow={srv.diskUsedPct} aria-valuemin={0} aria-valuemax={100} aria-label="Disk usage">
-              <div className="prod-fill" style={{ width: `${srv.diskUsedPct}%`, background: srv.diskUsedPct > 90 ? 'var(--crit)' : srv.diskUsedPct > 75 ? 'var(--warn)' : 'var(--good)' }} />
-            </div>
+            <XpBar className="w-[200px]" bare value={srv.diskUsedPct} fill={srv.diskUsedPct > 90 ? 'var(--crit)' : srv.diskUsedPct > 75 ? 'var(--warn)' : 'var(--good)'} aria-label="Disk usage" />
             <span className={srv.diskUsedPct > 90 ? 'tone-crit' : ''}>{Math.round(srv.diskUsedPct)}% used</span>
             <button className="btn small" onClick={() => act(d.id, 'free-disk')}>
               Clean up old logs

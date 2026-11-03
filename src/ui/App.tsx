@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AUTOSAVE_MS } from '../core/platform';
 import type { Camera } from '../render/renderer';
 import { Game } from '../sim/game';
 import { BH, BW, T } from '../world/layout';
@@ -181,7 +182,7 @@ function GameScreen({ game, restart }: { game: Game; restart: (g?: Game) => void
 
   // autosave & day summaries
   useEffect(() => {
-    const iv = setInterval(() => game.save(), 20000);
+    const iv = setInterval(() => game.save(), AUTOSAVE_MS);
     const onHide = () => game.save();
     window.addEventListener('beforeunload', onHide);
     document.addEventListener('visibilitychange', onHide);

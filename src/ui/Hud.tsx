@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Button as MapButton } from '@/components/ui/button-1';
 import { fmtClock } from '../core/time';
 import type { Toast } from '../sim/game';
 import { NOC_VIEW } from '../world/layout';
@@ -49,31 +50,49 @@ export function MapControls() {
   };
   return (
     <div className="mapctl" role="toolbar" aria-label="Map controls">
-      <button className="btn small" onClick={() => zoom(1.25)} aria-label="Zoom in" title="Zoom in (+)">
-        <Icon name="zoomIn" size={18} />
-      </button>
-      <button className="btn small" onClick={() => zoom(0.8)} aria-label="Zoom out" title="Zoom out (−)">
-        <Icon name="zoomOut" size={18} />
-      </button>
-      <button className="btn small" onClick={() => {
-          const z = fitZoom(window.innerWidth, window.innerHeight - 60);
-          const c = fitCenter(z);
-          flyTo(c.x, c.y, z);
-        }} title="Fit office (0)">
-        <Icon name="target" size={18} /> Fit
-      </button>
-      <button className="btn small" onClick={() => flyTo(NOC_VIEW.x, NOC_VIEW.y, 1.8)} title="Jump to the NOC and server room">
-        <Icon name="server" size={18} /> NOC
-      </button>
-      <button className="btn small" onClick={() => setUi((u) => ({ ...u, cables: u.cables === 'auto' ? 'all' : u.cables === 'all' ? 'off' : 'auto' }))} title="Cable view (C): Auto shows uplinks + the selected device's cables">
-        <Icon name="cable" size={18} /> Cables: {ui.cables === 'auto' ? 'Auto' : ui.cables === 'all' ? 'All' : 'Off'}
-      </button>
-      <button className={`btn small ${ui.overlay === 'wifi' ? 'active' : ''}`} onClick={() => setUi((u) => ({ ...u, overlay: u.overlay === 'wifi' ? 'none' : 'wifi' }))} aria-pressed={ui.overlay === 'wifi'}>
-        <Icon name="wifi" size={18} /> Wi-Fi
-      </button>
-      <button className={`btn small ${ui.overlay === 'health' ? 'active' : ''}`} disabled={!game.hasUpgrade('nms')} onClick={() => setUi((u) => ({ ...u, overlay: u.overlay === 'health' ? 'none' : 'health' }))} aria-pressed={ui.overlay === 'health'} title={game.hasUpgrade('nms') ? 'Device health & uplink utilisation (NMS)' : 'Requires the Network monitoring suite (Shop)'}>
-        <Icon name="layers" size={18} /> Health
-      </button>
+      <span title="Zoom in (+)">
+        <MapButton aria-label="Zoom in" shape="square" size="medium" svgOnly type="secondary" onClick={() => zoom(1.25)}>
+          <Icon name="zoomIn" size={20} />
+        </MapButton>
+      </span>
+      <span title="Zoom out (−)">
+        <MapButton aria-label="Zoom out" shape="square" size="medium" svgOnly type="secondary" onClick={() => zoom(0.8)}>
+          <Icon name="zoomOut" size={20} />
+        </MapButton>
+      </span>
+      <span title="Fit office (0)">
+        <MapButton
+          type="secondary"
+          prefix={<Icon name="target" size={18} />}
+          onClick={() => {
+            const z = fitZoom(window.innerWidth, window.innerHeight - 60);
+            const c = fitCenter(z);
+            flyTo(c.x, c.y, z);
+          }}
+        >
+          Fit
+        </MapButton>
+      </span>
+      <span title="Jump to the NOC and server room">
+        <MapButton type="secondary" prefix={<Icon name="server" size={18} />} onClick={() => flyTo(NOC_VIEW.x, NOC_VIEW.y, 1.8)}>
+          NOC
+        </MapButton>
+      </span>
+      <span title="Cable view (C): Auto shows uplinks + the selected device's cables">
+        <MapButton type="secondary" prefix={<Icon name="cable" size={18} />} onClick={() => setUi((u) => ({ ...u, cables: u.cables === 'auto' ? 'all' : u.cables === 'all' ? 'off' : 'auto' }))}>
+          Cables: {ui.cables === 'auto' ? 'Auto' : ui.cables === 'all' ? 'All' : 'Off'}
+        </MapButton>
+      </span>
+      <span title="Wi-Fi coverage and channels">
+        <MapButton type={ui.overlay === 'wifi' ? 'primary' : 'secondary'} aria-pressed={ui.overlay === 'wifi'} prefix={<Icon name="wifi" size={18} />} onClick={() => setUi((u) => ({ ...u, overlay: u.overlay === 'wifi' ? 'none' : 'wifi' }))}>
+          Wi-Fi
+        </MapButton>
+      </span>
+      <span title={game.hasUpgrade('nms') ? 'Device health & uplink utilisation (NMS)' : 'Requires the Network monitoring suite (Shop)'}>
+        <MapButton type={ui.overlay === 'health' ? 'primary' : 'secondary'} disabled={!game.hasUpgrade('nms')} aria-pressed={ui.overlay === 'health'} prefix={<Icon name="layers" size={18} />} onClick={() => setUi((u) => ({ ...u, overlay: u.overlay === 'health' ? 'none' : 'health' }))}>
+          Health
+        </MapButton>
+      </span>
     </div>
   );
 }

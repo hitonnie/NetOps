@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { XpBar } from '@/components/ui/8bit-xp-bar';
+import { AUTOSAVE_MS, desktop } from '../core/platform';
 import { dayIndex, fmtClock, fmtDay } from '../core/time';
 import { SHOP } from '../content/shop';
 import { Game, rankFor, SEV_LABEL } from '../sim/game';
@@ -48,12 +50,12 @@ export function Drawer() {
 // ---------------------------------------------------------------------------
 
 const KIND_LABEL: Record<Email['kind'], { label: string; color: string }> = {
-  report: { label: 'User report', color: '#c2410c' },
-  request: { label: 'Request', color: '#0369a1' },
-  thanks: { label: 'Thanks', color: '#17733f' },
-  noise: { label: 'FYI', color: '#5d6f8a' },
-  system: { label: 'Monitoring', color: '#6d28d9' },
-  security: { label: 'SECURITY', color: '#b91c1c' },
+  report: { label: 'User report', color: '#ffa060' },
+  request: { label: 'Request', color: '#8cc4ff' },
+  thanks: { label: 'Thanks', color: '#5ee08a' },
+  noise: { label: 'FYI', color: '#a1a1aa' },
+  system: { label: 'Monitoring', color: '#c4b5fd' },
+  security: { label: 'SECURITY', color: '#ff6b6b' },
 };
 
 function Inbox() {
@@ -113,7 +115,7 @@ function Inbox() {
               <span className="chip" style={{ color: KIND_LABEL[m.kind].color, borderColor: KIND_LABEL[m.kind].color, fontSize: 11.5 }}>
                 {KIND_LABEL[m.kind].label}
               </span>
-              {m.starred && <Icon name="star" size={14} style={{ color: '#d48a12', marginLeft: 6 }} />}
+              {m.starred && <Icon name="star" size={14} style={{ color: 'var(--gold)', marginLeft: 6 }} />}
             </button>
           ))}
         </div>
@@ -359,22 +361,14 @@ function Manager() {
     <div className="drawer-body">
       <div className="card row" style={{ gap: 14 }}>
         <svg width="54" height="54" viewBox="0 0 54 54" aria-hidden>
-          <circle cx="27" cy="27" r="26" fill="#d5e5fb" />
+          <circle cx="27" cy="27" r="26" fill="#26262e" />
           <path d="M10 50c3-11 10-15 17-15s14 4 17 15" fill="#7c3aed" />
           <circle cx="27" cy="22" r="10" fill="#c68a62" />
           <path d="M16 21c1-9 7-12 11-12s11 3 11 12c-3-4-6-5-11-5s-8 1-11 5z" fill="#2e1f14" />
         </svg>
         <div className="grow">
           <b>Dana Whitfield</b> <span className="dim">· COO, your manager</span>
-          <div className="row" style={{ marginTop: 6 }}>
-            <span className="dim" style={{ fontSize: 14 }}>
-              Confidence
-            </span>
-            <div className="prod-bar" style={{ width: 140 }} role="meter" aria-valuenow={Math.round(sat)} aria-valuemin={0} aria-valuemax={100} aria-label="Manager confidence">
-              <div className="prod-fill" style={{ width: `${sat}%`, background: sat >= 50 ? 'var(--good)' : sat >= 30 ? 'var(--warn)' : 'var(--crit)' }} />
-            </div>
-            <b>{Math.round(sat)}</b>
-          </div>
+          <XpBar className="mt-3 max-w-[320px]" variant="retro" value={sat} label="CONFIDENCE" valueLabel={Math.round(sat)} fill={sat >= 50 ? 'var(--good)' : sat >= 30 ? 'var(--warn)' : 'var(--crit)'} aria-label="Manager confidence" />
         </div>
       </div>
       <dl className="kv" style={{ margin: '10px 2px' }}>
@@ -423,7 +417,7 @@ function Manager() {
         {msgs.map((m) => (
           <button key={m.id} className="btn ghost" style={{ display: 'block', textAlign: 'left', whiteSpace: 'normal', background: cur?.id === m.id ? 'var(--sel)' : undefined, border: '2px solid var(--border)', boxShadow: 'none' }} onClick={() => setSel(m.id)}>
             <div className="row">
-              <b className="grow" style={{ color: m.kind === 'escalation' ? '#b52a2a' : m.kind === 'praise' ? '#17733f' : undefined }}>
+              <b className="grow" style={{ color: m.kind === 'escalation' ? '#ff6b6b' : m.kind === 'praise' ? '#5ee08a' : undefined }}>
                 {m.subject}
               </b>
               <span className="dim mono" style={{ fontSize: 12.5 }}>
@@ -444,7 +438,7 @@ function Feed() {
   const { game } = useUi();
   const [kind, setKind] = useState<string>('all');
   const items = game.s.feed.filter((f) => kind === 'all' || f.kind === kind).slice().reverse();
-  const color: Record<string, string> = { info: 'var(--muted)', good: '#17733f', bad: '#b5481a', security: '#b52a2a', change: '#1d5aa0' };
+  const color: Record<string, string> = { info: 'var(--muted)', good: '#5ee08a', bad: '#ffa060', security: '#ff6b6b', change: '#8cc4ff' };
   return (
     <>
       <div className="tabs">
@@ -518,13 +512,31 @@ function Settings() {
         <Icon name="info" size={16} /> Keyboard shortcuts
       </button>
       <div className="section-title">Save</div>
-      <div className="muted" style={{ fontSize: 14.5 }}>
-        Progress saves automatically to this browser every 20 seconds and when you leave the page.
-      </div>
       <div className="row">
+        <span className="chip fixed">AUTOSAVE: ON</span>
+        <span className="muted">{game.lastSavedAt ? `Last saved ${new Date(game.lastSavedAt).toLocaleTimeString()}` : 'Not saved yet this session'}</span>
+      </div>
+      <div className="muted" style={{ fontSize: 14.5 }}>
+        {desktop ? (
+          <>
+            Your progress is written to a save file on this PC every {AUTOSAVE_MS / 1000} seconds and when you close the game (the previous save is kept as a backup):
+            <div className="mono" style={{ wordBreak: 'break-all', marginTop: 4 }}>
+              {desktop.saveLocation}
+            </div>
+          </>
+        ) : (
+          <>Progress saves automatically to this browser every {AUTOSAVE_MS / 1000} seconds and when you leave the page.</>
+        )}
+      </div>
+      <div className="row wrap">
         <button className="btn small" onClick={() => setSaved(game.save() ? 'Saved.' : 'Could not save (storage unavailable).')}>
           <Icon name="save" size={16} /> Save now
         </button>
+        {desktop && (
+          <button className="btn small" onClick={() => desktop?.openSaveFolder()}>
+            <Icon name="archive" size={16} /> Open save folder
+          </button>
+        )}
         {saved && <span className="muted">{saved}</span>}
       </div>
       <div className="section-title">New game</div>

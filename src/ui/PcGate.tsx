@@ -1,5 +1,4 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { Icon } from './icons';
 
 const MIN_W = 1024;
 const MIN_H = 600;
@@ -28,7 +27,7 @@ export function PcGate({ children }: { children: ReactNode }) {
     return (
       <div className="pc-gate" role="alert">
         <div className="modal">
-          <Icon name="terminal" size={44} style={{ color: 'var(--accent)' }} />
+          <img src="/favicon.svg" alt="" width={64} height={64} style={{ imageRendering: 'pixelated' }} />
           <h2>NetOps is a PC game</h2>
           <p>It's built for a desktop or laptop with a mouse and keyboard — touch screens aren't supported. Open this page on your computer to play.</p>
         </div>
@@ -41,7 +40,7 @@ export function PcGate({ children }: { children: ReactNode }) {
       {small && !ignoreSize && (
         <div className="pc-gate" role="alert">
           <div className="modal">
-            <Icon name="target" size={44} style={{ color: 'var(--accent)' }} />
+            <img src="/favicon.svg" alt="" width={64} height={64} style={{ imageRendering: 'pixelated' }} />
             <h2>Make the window bigger</h2>
             <p>
               NetOps needs at least {MIN_W}×{MIN_H} pixels — your window is {window.innerWidth}×{window.innerHeight}. Maximise the browser window (or press <kbd>F11</kbd> for full screen) for the best experience.

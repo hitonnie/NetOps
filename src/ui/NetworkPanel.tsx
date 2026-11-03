@@ -115,23 +115,23 @@ function Topology() {
     const l = net.links[lId];
     const ia = net.devices[l.a.dev]?.ifaces.find((i) => i.name === l.a.iface);
     if (l.status !== 'ok' && l.status !== 'degraded') return '#d64545';
-    if (e.c.stpBlocked.has(`${l.a.dev}|${l.a.iface}`) || e.c.stpBlocked.has(`${l.b.dev}|${l.b.iface}`)) return '#9ca8ba';
+    if (e.c.stpBlocked.has(`${l.a.dev}|${l.a.iface}`) || e.c.stpBlocked.has(`${l.b.dev}|${l.b.iface}`)) return '#6b6b75';
     if (!ia || !e.oper(ia).up) return '#d64545';
     if (l.status === 'degraded' || e.oper(ia).duplexMismatch) return '#f59e0b';
     const u = e.utilization(l.id);
-    return u > 0.85 ? '#ea6a1f' : l.medium === 'fiber' ? '#e8961f' : '#2b7bd6';
+    return u > 0.85 ? '#ea6a1f' : l.medium === 'fiber' ? '#e8961f' : '#3d8de4';
   };
-  const devColor = (d: Device) => (!e.c.devPowered.get(d.id) ? '#d64545' : !e.isUp(d.id) ? '#d48a12' : d.kind === 'rogue' ? '#c99a00' : '#23955a');
+  const devColor = (d: Device) => (!e.c.devPowered.get(d.id) ? '#d64545' : !e.isUp(d.id) ? '#d48a12' : d.kind === 'rogue' ? '#f5b70a' : '#3ecf6e');
   return (
     <div className="drawer-body">
       <div className="muted" style={{ fontSize: 14, marginBottom: 6 }}>
         Logical view. Blue = copper, amber = fiber, red = down, grey = blocked by spanning tree, orange = congested/errors. Click a node to inspect it.
       </div>
-      <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', background: '#f3f7fd', borderRadius: 14, border: '2px solid var(--border)' }} role="img" aria-label="Logical network topology">
-        <text x={W / 2} y={14} fill="#4c607f" fontSize="11" fontWeight="800" textAnchor="middle">
+      <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', background: '#0e0e12', margin: 4, boxShadow: '0 -3px 0 0 #33333c, 0 3px 0 0 #33333c, -3px 0 0 0 #33333c, 3px 0 0 0 #33333c' }} role="img" aria-label="Logical network topology">
+        <text x={W / 2} y={14} fill="#a1a1aa" fontSize="11" fontWeight="800" textAnchor="middle">
           INTERNET
         </text>
-        <line x1={W / 2} y1={18} x2={pos.get('isp-gw')!.x} y2={pos.get('isp-gw')!.y - 12} stroke={net.ispOutage ? '#d64545' : '#2b7bd6'} strokeWidth={2} strokeDasharray={net.ispOutage ? '4 4' : undefined} />
+        <line x1={W / 2} y1={18} x2={pos.get('isp-gw')!.x} y2={pos.get('isp-gw')!.y - 12} stroke={net.ispOutage ? '#d64545' : '#3d8de4'} strokeWidth={2} strokeDasharray={net.ispOutage ? '4 4' : undefined} />
         {Object.values(net.links).map((l) => {
           const a = pos.get(l.a.dev);
           const b = pos.get(l.b.dev);
@@ -144,8 +144,8 @@ function Topology() {
           const big = ['isp', 'firewall', 'l3switch', 'switch', 'server'].includes(d.kind) || id === 'noc-pc';
           return (
             <g key={id} transform={`translate(${p.x},${p.y})`} style={{ cursor: 'pointer' }} onClick={() => openDevice(id)} role="button" aria-label={`Open ${d.name}`} tabIndex={0} onKeyDown={(ev) => ev.key === 'Enter' && openDevice(id)}>
-              {big ? <rect x={-34} y={-12} width={68} height={24} rx={8} fill="#ffffff" stroke={devColor(d)} strokeWidth={2.2} /> : <circle r={9} fill="#ffffff" stroke={devColor(d)} strokeWidth={2.2} />}
-              <text y={big ? 4 : 22} fill="#1c2d48" fontWeight="800" fontSize={big ? 10 : 8} textAnchor="middle">
+              {big ? <rect x={-34} y={-12} width={68} height={24} rx={0} fill="#1b1b21" stroke={devColor(d)} strokeWidth={2.2} /> : <circle r={9} fill="#1b1b21" stroke={devColor(d)} strokeWidth={2.2} />}
+              <text y={big ? 4 : 22} fill="#f4f4f5" fontWeight="800" fontSize={big ? 10 : 8} textAnchor="middle">
                 {d.kind === 'rogue' ? '???' : d.name.replace(/^(ENG|DSN|QA|FIN|RCP)-PC/, '$1')}
               </text>
             </g>

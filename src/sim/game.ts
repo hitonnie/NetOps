@@ -3,6 +3,7 @@
  * (network engine, employees, incident director, economy, persistence).
  * The UI reads `game.s` and calls the public action methods.
  */
+import { desktop } from '../core/platform';
 import { chance, int, makeRng, next, pick, range, type RngState, weighted } from '../core/rng';
 import { dayIndex, fmtClock, fmtDuration, isWeekend, minuteOfDay } from '../core/time';
 import { complaint, type Failing, managerWelcome, NOISE, printerComplaint, thanks } from '../content/messages';
@@ -58,12 +59,27 @@ export function prodLevel(p: number): { label: string; tone: 'good' | 'ok' | 'wa
   return { label: 'Critical', tone: 'crit' };
 }
 
+/** Career ladder: the score needed for each rank, plus a short name for the XP bar. */
+export const RANKS = [
+  { min: 0, name: 'Junior Network Technician', short: 'JR TECH' },
+  { min: 800, name: 'Network Technician', short: 'TECHNICIAN' },
+  { min: 2500, name: 'Network Engineer (CCNA)', short: 'ENGINEER' },
+  { min: 5500, name: 'Senior Network Engineer', short: 'SENIOR ENG' },
+  { min: 10000, name: 'Principal Network Architect', short: 'ARCHITECT' },
+] as const;
+
 export function rankFor(score: number): string {
-  if (score < 800) return 'Junior Network Technician';
-  if (score < 2500) return 'Network Technician';
-  if (score < 5500) return 'Network Engineer (CCNA)';
-  if (score < 10000) return 'Senior Network Engineer';
-  return 'Principal Network Architect';
+  return rankProgress(score).name;
+}
+
+/** Current rank (level 1–5) and progress towards the next one, 0–100. */
+export function rankProgress(score: number): { level: number; name: string; short: string; next: number | null; pct: number } {
+  let i = 0;
+  while (i + 1 < RANKS.length && score >= RANKS[i + 1].min) i++;
+  const r = RANKS[i];
+  const next = i + 1 < RANKS.length ? RANKS[i + 1].min : null;
+  const pct = next === null ? 100 : Math.max(0, Math.min(100, ((score - r.min) / (next - r.min)) * 100));
+  return { level: i + 1, name: r.name, short: r.short, next, pct };
 }
 
 export function newState(seed: number, opts: { tutorial: boolean; reproducible: boolean; hintMode: 'earned' | 'free' }): GameState {
@@ -123,6 +139,9 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
   private dirtyUi = false;
   private uiTimer = 0;
   skipping = false;
+  /** Wall-clock time of the last successful save (not stored in the save itself). */
+  lastSavedAt: number | null = null;
+  private saveListeners = new Set<(ok: boolean) => void>();
 
   constructor(state: GameState) {
     this.s = state;
@@ -1565,18 +1584,33 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     return JSON.stringify(this.s);
   }
 
+  /** Saves to the autosave file in the desktop app, or to localStorage in the browser. */
   save(): boolean {
+    let ok = false;
     try {
-      localStorage.setItem(SAVE_KEY, this.serialize());
-      return true;
+      const json = this.serialize();
+      if (desktop) ok = desktop.writeSave(json);
+      else {
+        localStorage.setItem(SAVE_KEY, json);
+        ok = true;
+      }
     } catch {
-      return false;
+      ok = false;
     }
+    if (ok) this.lastSavedAt = Date.now();
+    for (const fn of this.saveListeners) fn(ok);
+    return ok;
+  }
+
+  onSaved(fn: (ok: boolean) => void): () => void {
+    this.saveListeners.add(fn);
+    return () => this.saveListeners.delete(fn);
   }
 
   static load(): Game | null {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      // desktop: the save file, falling back to a save from before the app had one
+      const raw = desktop?.readSave() ?? localStorage.getItem(SAVE_KEY);
       if (!raw) return null;
       const st = JSON.parse(raw) as GameState;
       if (st.version !== SAVE_VERSION) return null;
@@ -1588,6 +1622,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
 
   static clearSave(): void {
     try {
+      desktop?.clearSave();
       localStorage.removeItem(SAVE_KEY);
     } catch {
       /* ignore */
