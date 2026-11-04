@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button as MapButton } from '@/components/ui/button-1';
+import { money } from '../core/money';
 import { fmtClock } from '../core/time';
 import type { Toast } from '../sim/game';
 import { NOC_VIEW } from '../world/layout';
@@ -267,7 +268,7 @@ export function DayModal() {
           <dt>Still open</dt>
           <dd>{d.incidentsOpen}</dd>
           <dt>Budget allowance</dt>
-          <dd>+${d.allowance.toLocaleString()}</dd>
+          <dd>+{money(d.allowance)}</dd>
           <dt>Score</dt>
           <dd>{d.score.toLocaleString()}</dd>
         </dl>

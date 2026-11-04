@@ -1,4 +1,5 @@
 /** Text generation for employee emails, noise mail and manager messages. */
+import { money } from '../core/money';
 import { pick, type RngState } from '../core/rng';
 import type { RosterEntry } from '../world/roster';
 
@@ -88,6 +89,6 @@ export const NOISE: { from: string; subject: string; body: string }[] = [
 export function managerWelcome(): { subject: string; body: string } {
   return {
     subject: 'Welcome aboard — your first day',
-    body: `Hi,\n\nWelcome to Brightloop Software! You're our network engineer now — the office network, the NOC and everything plugged into it are yours.\n\nHow I'll judge things:\n• Keep productivity high. When the network breaks, people can't work, and that costs us money.\n• Fix the root cause, then verify it — closing tickets that aren't really fixed wastes everyone's time.\n• Keep me informed on big outages (use "Send status update" on an incident).\n• Spend the IT budget wisely. Good investments make your life easier.\n\nYou start with a $12,000 budget; I'll top it up every evening based on how the day went.\n\nGood luck!\nDana Whitfield, COO`,
+    body: `Hi,\n\nWelcome to Brightloop Software! You're our network engineer now — the office network, the NOC and everything plugged into it are yours.\n\nHow I'll judge things:\n• Keep productivity high. When the network breaks, people can't work, and that costs us money.\n• Fix the root cause, then verify it — closing tickets that aren't really fixed wastes everyone's time.\n• Keep me informed on big outages (use "Send status update" on an incident).\n• Spend the IT budget wisely. Good investments make your life easier.\n\nYou start with a budget of ${money(12000)} — that's 12,000 sigils; I'll top it up every evening based on how the day went.\n\nGood luck!\nDana Whitfield, COO`,
   };
 }

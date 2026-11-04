@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { XpBar } from '@/components/ui/8bit-xp-bar';
+import { money } from '../core/money';
 import { AUTOSAVE_MS, desktop } from '../core/platform';
 import { daylight, fmtClock, fmtDay, minuteOfDay } from '../core/time';
 import { prodLevel, rankProgress, SPEEDS } from '../sim/game';
@@ -51,9 +52,9 @@ export function TopBar() {
       <div className="xp-stat" title={`Rank: ${rank.name}. ${rank.next !== null ? `${(rank.next - s.score).toLocaleString()} more points to the next rank.` : 'Top rank reached.'} Fast, verified fixes without hints score best.`}>
         <XpBar value={levelUp ? 100 : rank.pct} label={`LV${rank.level} ${rank.short}`} valueLabel={rank.next !== null ? `${s.score.toLocaleString()}/${rank.next.toLocaleString()}` : `${s.score.toLocaleString()} MAX`} levelUp={levelUp} aria-label={`Rank ${rank.name}, score ${s.score}`} />
       </div>
-      <div className="stat" title="IT budget for purchases. Topped up every evening based on how the day went.">
+      <div className="stat" title="IT budget in sigils (§) for purchases. Topped up every evening based on how the day went.">
         <small>Budget</small>
-        <b style={{ color: s.budget < 500 ? 'var(--crit)' : 'var(--gold)' }}>${Math.round(s.budget).toLocaleString()}</b>
+        <b style={{ color: s.budget < 500 ? 'var(--crit)' : 'var(--gold)' }}>{money(s.budget)}</b>
       </div>
       <button className="stat btn ghost" style={{ alignItems: 'flex-start', padding: '2px 6px', textTransform: 'none' }} onClick={() => setDrawer('manager')} title="Your manager's confidence in you. If it reaches 0 you are fired.">
         <small>Manager</small>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import MainMenu, { type MainMenuItem } from '@/components/ui/8bit-main-menu';
+import { money } from '../core/money';
 import { desktop } from '../core/platform';
 import { fmtClock, fmtDay } from '../core/time';
 import { Game, rankFor } from '../sim/game';
@@ -92,7 +93,7 @@ export function StartScreen({ onStart }: { onStart: (g: Game) => void }) {
               <p className="retro mt-6 text-center text-[9px] leading-loose text-muted-foreground">
                 {rankFor(saved.s.score).toUpperCase()}
                 <br />
-                SCORE {saved.s.score.toLocaleString()} · ${Math.round(saved.s.budget).toLocaleString()} · {saved.s.stats.resolved} FIXED
+                SCORE {saved.s.score.toLocaleString()} · {money(saved.s.budget)} · {saved.s.stats.resolved} FIXED
               </p>
             )}
             {options && (

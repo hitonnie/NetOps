@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { XpBar } from '@/components/ui/8bit-xp-bar';
+import { money } from '../core/money';
 import { fmtClock } from '../core/time';
 import { isUnsaved, renderRunningConfig } from '../net/config';
 import { maskToPrefix } from '../net/ip';
@@ -859,8 +860,8 @@ function IspTab({ d }: { d: Device }) {
         <button className="btn small" onClick={() => act(d.id, 'isp-ticket')}>
           Open ticket with ISP
         </button>
-        <button className="btn small" onClick={() => act(d.id, 'isp-filter')} title="Emergency DDoS filtering upstream — $500">
-          Request upstream filtering ($500)
+        <button className="btn small" onClick={() => act(d.id, 'isp-filter')} title={`Emergency DDoS filtering upstream — ${money(500)}`}>
+          Request upstream filtering ({money(500)})
         </button>
       </div>
       {view}

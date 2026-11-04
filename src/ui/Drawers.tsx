@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { XpBar } from '@/components/ui/8bit-xp-bar';
+import { money } from '../core/money';
 import { AUTOSAVE_MS, desktop } from '../core/platform';
 import { dayIndex, fmtClock, fmtDay } from '../core/time';
 import { SHOP } from '../content/shop';
@@ -291,7 +292,7 @@ function Shop() {
           <div className="dim" style={{ fontSize: 12.5, fontWeight: 700 }}>
             BUDGET
           </div>
-          <b style={{ fontSize: 23 }}>${Math.round(game.s.budget).toLocaleString()}</b>
+          <b style={{ fontSize: 23 }}>{money(game.s.budget)}</b>
         </div>
         <div className="dim" style={{ fontSize: 14, textAlign: 'right' }}>
           In stock: {game.s.inventory.cable ?? 0} patch cables · {game.s.inventory.fiber ?? 0} fiber/SFP · {game.s.inventory.psu ?? 0} PSU
@@ -312,7 +313,7 @@ function Shop() {
               <div key={item.id} className="card" style={{ marginBottom: 8, opacity: owned ? 0.7 : 1 }}>
                 <div className="row">
                   <b className="grow">{item.name}</b>
-                  <b className="mono">${item.price.toLocaleString()}</b>
+                  <b className="mono">{money(item.price)}</b>
                 </div>
                 <div className="muted" style={{ fontSize: 14.5, margin: '4px 0' }}>
                   {item.desc}
@@ -373,7 +374,7 @@ function Manager() {
       </div>
       <dl className="kv" style={{ margin: '10px 2px' }}>
         <dt>Budget</dt>
-        <dd>${Math.round(s.budget).toLocaleString()}</dd>
+        <dd>{money(s.budget)}</dd>
         <dt>Score</dt>
         <dd>
           {s.score.toLocaleString()} · {rankFor(s.score)}
@@ -405,7 +406,7 @@ function Manager() {
                   <td>{d.avgProductivity}%</td>
                   <td>{d.incidentsResolved}</td>
                   <td>{d.slaBreaches}</td>
-                  <td>+${d.allowance.toLocaleString()}</td>
+                  <td>+{money(d.allowance)}</td>
                 </tr>
               ))}
             </tbody>

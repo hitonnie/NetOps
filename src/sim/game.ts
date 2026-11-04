@@ -3,6 +3,7 @@
  * (network engine, employees, incident director, economy, persistence).
  * The UI reads `game.s` and calls the public action methods.
  */
+import { money } from '../core/money';
 import { desktop } from '../core/platform';
 import { chance, int, makeRng, next, pick, range, type RngState, weighted } from '../core/rng';
 import { dayIndex, fmtClock, fmtDuration, isWeekend, minuteOfDay } from '../core/time';
@@ -1322,10 +1323,10 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
       }
       case 'isp-filter': {
         if (s.net.ispUpstreamFilter) return { ok: true, msg: 'Upstream filtering is already active.' };
-        if (s.budget < 500) return { ok: false, msg: 'Emergency upstream filtering costs $500 — not enough budget.' };
+        if (s.budget < 500) return { ok: false, msg: `Emergency upstream filtering costs ${money(500)} — not enough budget.` };
         s.budget -= 500;
         s.net.ispUpstreamFilter = true;
-        this.feed('ISP enabled emergency upstream filtering ($500).', 'security');
+        this.feed(`ISP enabled emergency upstream filtering (${money(500)}).`, 'security');
         return done('ISP upstream filtering requested', false);
       }
       default:
@@ -1341,14 +1342,14 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     if (!item) return { ok: false, msg: 'Unknown item' };
     const s = this.s;
     if (item.kind === 'upgrade' && s.purchases.includes(itemId)) return { ok: false, msg: 'Already purchased.' };
-    if (s.budget < item.price) return { ok: false, msg: `Not enough budget ($${s.budget.toLocaleString()} available).` };
+    if (s.budget < item.price) return { ok: false, msg: `Not enough budget (${money(s.budget)} available).` };
     s.budget -= item.price;
     if (item.kind === 'consumable') s.inventory[itemId] = (s.inventory[itemId] ?? 0) + (item.qty ?? 1);
     else {
       s.purchases.push(itemId);
       this.applyUpgrade(itemId);
     }
-    this.feed(`Purchased: ${item.name} ($${item.price.toLocaleString()}).`, 'good');
+    this.feed(`Purchased: ${item.name} (${money(item.price)}).`, 'good');
     this.flag('shop-bought');
     this.touch();
     return { ok: true, msg: `Purchased ${item.name}.` };
@@ -1434,7 +1435,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     if (day === 0 && !s.tasks.some((t) => t.check === 'provision')) {
       this.addTask({
         title: 'Provision desk ENG-11 for a new engineer',
-        detail: "Sam Rivera starts tomorrow at desk ENG-11 (SW-ENG Gi1/0/11). Put the port in VLAN 10, give it a description, and bring it up ('no shutdown'). Reward: $300 and manager confidence.",
+        detail: `Sam Rivera starts tomorrow at desk ENG-11 (SW-ENG Gi1/0/11). Put the port in VLAN 10, give it a description, and bring it up ('no shutdown'). Reward: ${money(300)} and manager confidence.`,
         kind: 'request',
         incidentId: null,
         check: 'provision',
@@ -1447,7 +1448,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     if (day === 1 && !s.tasks.some((t) => t.check === 'blockhost')) {
       this.addTask({
         title: 'Block a known-malicious domain at the firewall',
-        detail: "Security asks you to block all traffic from inside to 185.220.101.47 (update-check.xyz) on FW-EDGE. Add a deny entry ABOVE the permit in the INSIDE-OUT ACL. Reward: $250.",
+        detail: `Security asks you to block all traffic from inside to 185.220.101.47 (update-check.xyz) on FW-EDGE. Add a deny entry ABOVE the permit in the INSIDE-OUT ACL. Reward: ${money(250)}.`,
         kind: 'request',
         incidentId: null,
         check: 'blockhost',
@@ -1460,7 +1461,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     if (day === 2 && !s.tasks.some((t) => t.check === 'provision' && t.checkArgs.port === 'GigabitEthernet1/0/7')) {
       this.addTask({
         title: 'Provision desk DSN-07 for a contractor',
-        detail: 'A design contractor sits at DSN-07 (SW-DQA Gi1/0/7) from tomorrow. Configure the port as an access port in VLAN 20, add a description and enable it. Reward: $300.',
+        detail: `A design contractor sits at DSN-07 (SW-DQA Gi1/0/7) from tomorrow. Configure the port as an access port in VLAN 20, add a description and enable it. Reward: ${money(300)}.`,
         kind: 'request',
         incidentId: null,
         check: 'provision',
@@ -1497,7 +1498,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
         if (t.reward >= 50) s.budget += t.reward;
         s.satisfaction = Math.min(100, s.satisfaction + (t.kind === 'request' ? 3 : t.reward));
         s.score += t.kind === 'request' ? 120 : 40;
-        this.feed(`Task complete: ${t.title}${t.reward >= 50 ? ` (+$${t.reward})` : ''}`, 'good');
+        this.feed(`Task complete: ${t.title}${t.reward >= 50 ? ` (+${money(t.reward)})` : ''}`, 'good');
         this.toast({ kind: 'good', title: `Task done: ${t.title}` });
       } else if (t.due && s.t > t.due) {
         t.failed = true;
@@ -1530,7 +1531,7 @@ export class Game implements SimApi, ScenarioHost, PeopleHost {
     s.satisfaction = Math.max(0, Math.min(100, s.satisfaction + Math.max(-5, Math.min(5, (avg - 80) / 4))));
     s.days.push({ day, avgProductivity: Math.round(avg), incidentsResolved: resolved, incidentsOpen: open, slaBreaches: breaches, allowance, score: s.score });
     const tone = avg >= 90 ? 'Great day.' : avg >= 75 ? 'Solid day overall.' : avg >= 60 ? 'A rough day — people lost a lot of time.' : 'That was a bad day for the business.';
-    this.managerMsg(`Day ${day + 1} wrap-up`, `${tone}\n\n• Average productivity: ${Math.round(avg)}%\n• Incidents resolved today: ${resolved}${breaches ? ` (${breaches} breached SLA)` : ''}\n• Still open: ${open}\n• Tomorrow's IT allowance: +$${allowance.toLocaleString()}\n\nBudget is now $${Math.round(s.budget).toLocaleString()}.${s.satisfaction < 35 ? "\n\nI'll be honest — I'm worried. We need fewer outages." : ''}\n\n— Dana`, 'budget');
+    this.managerMsg(`Day ${day + 1} wrap-up`, `${tone}\n\n• Average productivity: ${Math.round(avg)}%\n• Incidents resolved today: ${resolved}${breaches ? ` (${breaches} breached SLA)` : ''}\n• Still open: ${open}\n• Tomorrow's IT allowance: +${money(allowance)}\n\nBudget is now ${money(s.budget)}.${s.satisfaction < 35 ? "\n\nI'll be honest — I'm worried. We need fewer outages." : ''}\n\n— Dana`, 'budget');
     this.flag('day-ended');
   }
 
