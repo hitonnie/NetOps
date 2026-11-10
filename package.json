@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "NetOps: Office Network Engineer — a NOC / CCNA troubleshooting simulation game",
-  "author": "Tonny",
+  "author": "Tonny (https://github.com/hitonnie)",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -42,7 +42,7 @@
   "build": {
     "appId": "com.hitonnie.netops",
     "productName": "NetOps",
-    "copyright": "Copyright © 2026 Tonny",
+    "copyright": "Copyright © 2026 Tonny (https://github.com/hitonnie)",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -67,6 +67,7 @@
       "executableName": "NetOps"
     },
     "nsis": {
+      "license": "build/license.txt",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
